@@ -10,12 +10,6 @@ def test_conexion(conexion):
 
 	assert "usuarios" in tablas
 
-def test_tabla_vacia(conexion):
-
-	conexion.c.execute("SELECT * FROM usuarios")
-
-	assert conexion.c.fetchall()==[]
-
 def test_cerrar_conexion(conexion):
 
 	assert not conexion.bbdd.closed

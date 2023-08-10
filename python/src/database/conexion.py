@@ -23,3 +23,22 @@ class Conexion:
 
 		self.c.close()
 		self.bbdd.close()
+
+	# Metodo para insertar un usuario
+	def insertarUsuario(self, usuario:str, nombre:str, apellido1:str, apellido2:str, contrasena:str, edad:int, ciudad:str, pais:str)->None:
+
+		self.c.execute("""INSERT INTO usuarios
+						VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
+						(usuario, nombre, apellido1, apellido2, contrasena, edad, ciudad, pais))
+
+		self.bbdd.commit()
+
+	# Metodo para comprobar que un usuario existe
+	def existe_usuario(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT *
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		return False if (self.c.fetchone() is None) else True

@@ -25,4 +25,10 @@ def cliente(app):
 @pytest.fixture()
 def conexion(app):
 
-	return Conexion()
+	con=Conexion()
+
+	con.c.execute("DELETE FROM usuarios")
+
+	con.bbdd.commit()
+
+	return con
