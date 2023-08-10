@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient 
 
 from src import crear_app
+from src.database.conexion import Conexion
 
 @pytest.fixture()
 def app():
@@ -19,3 +20,9 @@ def app():
 def cliente(app):
 
 	return TestClient(app)
+
+
+@pytest.fixture()
+def conexion(app):
+
+	return Conexion()
