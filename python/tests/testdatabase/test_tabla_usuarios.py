@@ -37,3 +37,23 @@ def test_usuario_existe(conexion):
 	conexion.insertarUsuario("nacho98", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
 
 	assert conexion.existe_usuario("nacho98")
+
+def test_obtener_usuarios_no_existen(conexion):
+
+	assert conexion.obtenerUsuarios() is None
+
+def test_obtener_usuarios_existen(conexion):
+
+	conexion.insertarUsuario("nacho98", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+	conexion.insertarUsuario("nacho99", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+	conexion.insertarUsuario("nacho989", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+
+	usuarios=conexion.obtenerUsuarios()
+
+	assert len(usuarios)==3
+
+	for usuario in usuarios:
+
+		assert "nombre" in usuario
+		assert "apellido1" in usuario
+

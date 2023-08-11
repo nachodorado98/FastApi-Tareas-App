@@ -1,5 +1,6 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from typing import Dict, List, Optional
 
 from .confconexion import *
 
@@ -42,3 +43,14 @@ class Conexion:
 						(usuario,))
 
 		return False if (self.c.fetchone() is None) else True
+
+
+	# Metodo para obtener los usuarios
+	def obtenerUsuarios(self)->Optional[List[Dict]]:
+
+		self.c.execute("""SELECT nombre, apellido1
+						FROM usuarios""")
+
+		usuarios=self.c.fetchall()
+
+		return None if usuarios==[] else usuarios

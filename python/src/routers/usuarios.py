@@ -4,7 +4,8 @@ from typing import List, Dict
 from src.database.sesion import crearConexion
 from src.database.conexion import Conexion
 
-from src.modelos.usuario import Usuario, UsuarioBBDD
+from src.modelos.usuario import Usuario, UsuarioBBDD, UsuarioBasico
+from src.modelos.utils_usuario import obtenerObjetosUsuarioBasico
 
 from src.utils import generarHash
 
@@ -49,3 +50,33 @@ async def crearUsuario(usuario:UsuarioBBDD, con:Conexion=Depends(crearConexion))
 
 	return {"mensaje":"Usuario creado correctamente",
 			"usuario":{"usuario":usuario.usuario, "nombre":usuario.nombre}}
+
+
+@router_usuarios.get("", status_code=status.HTTP_200_OK, summary="Devuelve los usuarios existentes")
+async def obtenerUsuarios(con:Conexion=Depends(crearConexion))->List[UsuarioBasico]:
+
+	"""
+	Devuelve los diccionarios asociados a los usuarios disponibles en la BBDD.
+
+	## Respuesta
+
+	200 (OK): Si se obtienen los usuarios correctamente
+
+	- **Nombre**: El nombre del usuario (str).
+	- **Apellido1**: El primer apellido del usuario (str).
+
+	404 (NOT FOUND): Si no se obtienen los usuarios correctamente
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+	"""
+
+	usuarios=con.obtenerUsuarios()
+
+	con.cerrarConexion()
+
+	if usuarios is None:
+
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuarios no existentes")
+
+	return obtenerObjetosUsuarioBasico(usuarios)
+	

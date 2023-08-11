@@ -12,7 +12,7 @@ import pytest
 		({"usuario":"nacho98"},)
 	]
 )
-def test_agregar_usuario_incorrecto(cliente, conexion, usuario):
+def test_pagina_agregar_usuario_incorrecto(cliente, conexion, usuario):
 
 	respuesta=cliente.post("/usuarios", json=usuario)
 
@@ -27,7 +27,7 @@ def test_agregar_usuario_incorrecto(cliente, conexion, usuario):
 	assert len(conexion.c.fetchall())==0
 
 
-def test_agregar_usuario_existente(cliente, conexion):
+def test_pagina_agregar_usuario_existente(cliente, conexion):
 
 	conexion.insertarUsuario("nacho98", "Nacho", "Dorado", "Ruiz", "12345678", 25, "Madrid", "España")
 
@@ -47,7 +47,7 @@ def test_agregar_usuario_existente(cliente, conexion):
 	assert len(conexion.c.fetchall())==1
 
 
-def test_agregar_usuario(cliente, conexion):
+def test_pagina_agregar_usuario(cliente, conexion):
 
 	respuesta=cliente.post("/usuarios", json={"usuario":"nacho98", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
 
@@ -63,7 +63,7 @@ def test_agregar_usuario(cliente, conexion):
 
 	assert len(conexion.c.fetchall())==1
 
-def test_agregar_usuarios(cliente, conexion):
+def test_pagina_agregar_usuarios(cliente, conexion):
 
 	cliente.post("/usuarios", json={"usuario":"nacho98", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
 	cliente.post("/usuarios", json={"usuario":"nacho99", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
@@ -72,3 +72,27 @@ def test_agregar_usuarios(cliente, conexion):
 	conexion.c.execute("SELECT * FROM usuarios")
 
 	assert len(conexion.c.fetchall())==3
+
+
+def test_pagina_obtener_usuarios_no_existentes(cliente, conexion):
+
+	respuesta=cliente.get("/usuarios")
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==404
+	assert "detail" in contenido
+
+
+def test_pagina_obtener_usuarios_existentes(cliente, conexion):
+
+	cliente.post("/usuarios", json={"usuario":"nacho98", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
+	cliente.post("/usuarios", json={"usuario":"nacho99", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
+	cliente.post("/usuarios", json={"usuario":"nacho989", "nombre":"Nacho", "apellido1":"Dorado", "apellido2":"Ruiz", "contrasena":"12345678", "edad":25, "ciudad":"Madrid", "pais":"España"})
+
+	respuesta=cliente.get("/usuarios")
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==200
+	assert len(contenido)==3

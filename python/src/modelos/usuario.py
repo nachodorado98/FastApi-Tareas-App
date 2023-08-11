@@ -1,10 +1,13 @@
 from pydantic import BaseModel, validator
 
-class Usuario(BaseModel):
+class UsuarioBasico(BaseModel):
 
-	usuario:str
 	nombre:str
 	apellido1:str
+
+class Usuario(UsuarioBasico):
+
+	usuario:str
 	apellido2:str
 	edad:int
 	ciudad:str
