@@ -1,3 +1,5 @@
+import pytest
+
 def test_tabla_usuario_vacia(conexion):
 
 	conexion.c.execute("SELECT * FROM usuarios")
@@ -56,4 +58,23 @@ def test_obtener_usuarios_existen(conexion):
 
 		assert "nombre" in usuario
 		assert "apellido1" in usuario
+
+def test_obtener_contrasena_usuario_no_existe(conexion):
+
+	assert conexion.obtenerContrasena("nacho98") is None
+
+@pytest.mark.parametrize(["usuario"],
+	[("nacho98",),("nacho99",),("nacho989",)]
+)
+def test_obtener_contrasena_usuario_existe(conexion, usuario):
+
+	conexion.insertarUsuario("nacho98", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+	conexion.insertarUsuario("nacho99", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+	conexion.insertarUsuario("nacho989", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+
+	contrasena=conexion.obtenerContrasena(usuario)
+
+	assert contrasena=="1234"
+
+	
 
