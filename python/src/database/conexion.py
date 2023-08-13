@@ -76,3 +76,12 @@ class Conexion:
 						(usuario,))
 
 		return self.c.fetchone()
+
+	# Metodo para insertar una tarea
+	def insertarTarea(self, id_tarea:str, usuario:str, titulo:str, descripcion:str, categoria:str, fecha_creacion:str)->None:
+
+		self.c.execute("""INSERT INTO tareas (id_tarea, usuario, titulo, descripcion, categoria, fecha_creacion)
+						VALUES(%s, %s, %s, %s, %s, %s)""",
+						(id_tarea, usuario, titulo, descripcion, categoria, fecha_creacion))
+
+		self.bbdd.commit()

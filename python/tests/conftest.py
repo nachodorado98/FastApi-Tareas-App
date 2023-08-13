@@ -29,6 +29,8 @@ def conexion(app):
 
 	con.c.execute("DELETE FROM usuarios")
 
+	con.c.execute("DELETE FROM tareas")
+
 	con.bbdd.commit()
 
 	return con
