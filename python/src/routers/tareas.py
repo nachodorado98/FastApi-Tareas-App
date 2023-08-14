@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status, Depends
-from typing import Dict
+from fastapi import APIRouter, status, Depends, HTTPException
+from typing import Dict, List
 import datetime
 import uuid
 
@@ -7,7 +7,8 @@ from src.database.sesion import crearConexion
 from src.database.conexion import Conexion
 
 from src.modelos.token import Payload
-from src.modelos.tarea import TareaBBDD
+from src.modelos.tarea import TareaBBDD, Tarea
+from src.modelos.utils_tarea import obtenerObjetosTarea
 
 from src.autenticacion.utils_auth import decodificarToken
 
@@ -45,3 +46,42 @@ async def crearTarea(tarea:TareaBBDD, payload:Payload=Depends(decodificarToken),
 
 	return {"mensaje":"Tarea creada correctamente",
 			"tarea":{"titulo":tarea.titulo, "descripcion":tarea.descripcion}}
+
+
+@router_tareas.get("", status_code=status.HTTP_200_OK, summary="Devuelve las tareas")
+async def obtenerTareas(payload:Payload=Depends(decodificarToken), con:Conexion=Depends(crearConexion))->List[Tarea]:
+
+	"""
+	Devuelve los diccionarios asociados a las tareas disponibles en la BBDD del usuario.
+
+	## Respuesta
+
+	200 (OK): Si se obtienen las tareas correctamente
+
+	- **Id_tarea**: El id de la tarea (str).
+	- **Titulo**: El titulo de la tarea (str).
+	- **Descripcion**: La descripcion de la tarea (str).
+	- **Categoria**: La categoria de la tarea (str).
+	- **Completada**: El estado de la tarea (bool).
+	- **Comentario**: El comentario de la tarea (str).
+	- **Fecha_creacion**: La fecha de creacion de la tarea (str).
+	- **Fecha_completada**: La fecha de la realizacion de la tarea (str).
+
+	401 (UNAUTHORIZED): Si los datos no son correctos
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+
+	404 (NOT FOUND): Si no se obtienen las tareas correctamente
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+	"""
+
+	tareas=con.obtenerTareas(payload.sub)
+
+	con.cerrarConexion()
+
+	if tareas is None:
+
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tareas no existentes")
+
+	return obtenerObjetosTarea(tareas)

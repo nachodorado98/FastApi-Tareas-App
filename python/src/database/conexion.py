@@ -85,3 +85,15 @@ class Conexion:
 						(id_tarea, usuario, titulo, descripcion, categoria, fecha_creacion))
 
 		self.bbdd.commit()
+
+	# Metodo para obtener las tareas de un usuario
+	def obtenerTareas(self, usuario:str)->Optional[List[Dict]]:
+
+		self.c.execute("""SELECT id_tarea, titulo, descripcion, categoria, completada, comentario, fecha_creacion, fecha_completada
+						FROM tareas
+						WHERE usuario=%s""",
+						(usuario,))
+
+		tareas=self.c.fetchall()
+
+		return None if tareas==[] else tareas
