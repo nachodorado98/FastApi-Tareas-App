@@ -7,7 +7,7 @@ from src.database.sesion import crearConexion
 from src.database.conexion import Conexion
 
 from src.modelos.token import Payload
-from src.modelos.tarea import TareaBBDD, Tarea
+from src.modelos.tarea import TareaBBDD, Tarea, ComentarioBBDD
 from src.modelos.utils_tarea import obtenerObjetosTarea, obtenerObjetoTarea
 
 from src.autenticacion.utils_auth import decodificarToken
@@ -86,7 +86,6 @@ async def obtenerTareas(payload:Payload=Depends(decodificarToken), con:Conexion=
 
 	return obtenerObjetosTarea(tareas)
 
-
 @router_tareas.get("/{id_tarea}", status_code=status.HTTP_200_OK, summary="Devuelve los datos de la tarea")
 async def obtenerTarea(id_tarea:str=Path(..., title="Id de la tarea", description="El id de la tarea que quieres obtener"),
 						payload:Payload=Depends(decodificarToken),
@@ -121,9 +120,65 @@ async def obtenerTarea(id_tarea:str=Path(..., title="Id de la tarea", descriptio
 
 	tarea=con.obtenerDatosTarea(id_tarea)
 
+	con.cerrarConexion()
+
 	if tarea is None:
 
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no existente")
 
 	return obtenerObjetoTarea(tarea)
-	
+
+
+@router_tareas.put("/completar/{id_tarea}", status_code=status.HTTP_200_OK, summary="Actualiza la tarea a completada")
+async def completarTarea(comentario:ComentarioBBDD=None,
+						id_tarea:str=Path(..., title="Id de la tarea", description="El id de la tarea que quieres completar"),
+						payload:Payload=Depends(decodificarToken),
+						con:Conexion=Depends(crearConexion))->Dict:
+
+	"""
+	Actualiza el diccionario de la tarea a completar a traves de su id.
+
+	Devuelve un mensaje y el diccionario que representa a la tarea completada.
+
+	## Parametros
+
+	- **Id_tarea**: El id de la tarea (str).
+
+	200 (OK): Si se actualiza la tarea correctamente
+
+	- **Mensaje**: El mensaje de creacion correcta de la tarea (str).
+	- **Tarea**:  La tarea con su comentario (Dict).
+
+	400 (BAD REQUEST): Si no se actualiza la tarea correctamente
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+
+	401 (UNAUTHORIZED): Si los datos no son correctos
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+
+	404 (NOT FOUND): Si no se actualiza la tarea correctamente
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+	"""
+
+	tarea=con.obtenerDatosTarea(id_tarea)
+
+	if tarea is None:
+
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no existente")
+
+	if tarea["completada"]:
+
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tarea ya completada")
+
+	comentario_tarea=comentario if comentario is None else comentario.comentario
+
+	fecha_completada=datetime.datetime.now().strftime("%Y-%m-%d")
+
+	con.completarTarea(id_tarea, comentario_tarea, fecha_completada)
+
+	con.cerrarConexion()
+
+	return {"mensaje":"Tarea completada correctamente",
+			"tarea":{"comentario":comentario_tarea}}

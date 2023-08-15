@@ -21,3 +21,12 @@ class Tarea(TareaBBDD):
 	comentario:Optional[str]
 	fecha_creacion:str
 	fecha_completada:Optional[str]
+
+
+class ComentarioBBDD(BaseModel):
+
+	comentario:Optional[str]
+
+	class Config:
+
+		json_schema_extra={"example":{"comentario":"La tarea ha sido sencilla de realizar"}}

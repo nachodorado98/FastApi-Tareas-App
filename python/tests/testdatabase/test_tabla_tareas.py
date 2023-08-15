@@ -84,3 +84,33 @@ def test_obtener_tarea_existen(conexion):
 	assert "comentario" in tarea
 	assert "fecha_creacion" in tarea
 	assert "fecha_completada" in tarea
+
+def test_completar_tarea_no_comentario(conexion):
+
+	conexion.insertarUsuario("nacho98", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+
+	conexion.insertarTarea("idtarea", "nacho98", "titulo", "descripcion", "categoria", "2023-08-15")
+
+	conexion.completarTarea("idtarea", None, "2023-08-15")
+
+	tarea=conexion.obtenerDatosTarea("idtarea")
+
+	assert tarea["id_tarea"]=="idtarea"
+	assert tarea["completada"]==True
+	assert tarea["comentario"]==None
+	assert tarea["fecha_completada"] is not None
+
+def test_completar_tarea_comentario(conexion):
+
+	conexion.insertarUsuario("nacho98", "nacho", "dorado", "ruiz", "1234", 25, "madrid", "españa")
+
+	conexion.insertarTarea("idtarea", "nacho98", "titulo", "descripcion", "categoria", "2023-08-15")
+
+	conexion.completarTarea("idtarea", "Comentario tarea", "2023-08-15")
+
+	tarea=conexion.obtenerDatosTarea("idtarea")
+
+	assert tarea["id_tarea"]=="idtarea"
+	assert tarea["completada"]==True
+	assert tarea["comentario"]=="Comentario tarea"
+	assert tarea["fecha_completada"] is not None

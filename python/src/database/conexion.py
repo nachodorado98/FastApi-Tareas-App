@@ -106,3 +106,14 @@ class Conexion:
 						(id_tarea,))
 
 		return self.c.fetchone()
+
+	# Metodo para completar la tarea
+	def completarTarea(self, id_tarea:str, comentario:Optional[str], fecha_completada:str)->None:
+
+		self.c.execute("""UPDATE tareas
+						SET completada=True, comentario=%s, fecha_completada=%s
+						WHERE id_tarea=%s""",
+						(comentario, fecha_completada, id_tarea))
+
+		self.bbdd.commit()
+

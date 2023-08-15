@@ -147,7 +147,7 @@ def test_pagina_obtener_tarea_no_autenticado(cliente, token):
 	assert respuesta.status_code==401
 	assert "detail" in contenido
 
-def test_pagina_obtener_tarea_autenticado_no_existentes(cliente, conexion):
+def test_pagina_obtener_tarea_autenticado_no_existente(cliente, conexion):
 
 	header=obtenerHeaderToken(cliente)
 
@@ -182,3 +182,88 @@ def test_pagina_obtener_tarea_autenticado_existente(cliente, conexion):
 	assert "fecha_creacion" in contenido
 	assert "fecha_completada" in contenido
 	
+@pytest.mark.parametrize(["token"],
+	[("token",), ("dgfdkjg89e5yujgfkjgdf",), ("nacho98",), ("amanditaa",), ("1234",)]
+)
+def test_pagina_completar_tarea_no_autenticado(cliente, token):
+
+	header={"Authorization": f"Bearer {token}"}
+
+	respuesta=cliente.put("/tareas/completar/1", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==401
+	assert "detail" in contenido
+
+def test_pagina_completar_tarea_autenticado_no_existente(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	respuesta=cliente.put("/tareas/completar/1", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==404
+	assert "detail" in contenido
+
+def test_pagina_completar_tarea_autenticado_existente_completada(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	cliente.post("/tareas", json={"titulo":"Titulo", "descripcion":"Descripcion", "categoria":"Categoria"}, headers=header)
+
+	conexion.c.execute("UPDATE tareas SET completada=true")
+
+	conexion.bbdd.commit()
+
+	conexion.c.execute("SELECT id_tarea FROM tareas")
+
+	id_tarea=conexion.c.fetchone()["id_tarea"]
+
+	respuesta=cliente.put(f"/tareas/completar/{id_tarea}", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==400
+	assert "detail" in contenido
+
+def test_pagina_completar_tarea_autenticado_existente_no_comentario(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	cliente.post("/tareas", json={"titulo":"Titulo", "descripcion":"Descripcion", "categoria":"Categoria"}, headers=header)
+
+	conexion.c.execute("SELECT id_tarea FROM tareas")
+
+	id_tarea=conexion.c.fetchone()["id_tarea"]
+
+	respuesta=cliente.put(f"/tareas/completar/{id_tarea}", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==200
+	assert "mensaje" in contenido
+	assert "tarea" in contenido
+	assert "comentario" in contenido["tarea"]
+	assert contenido["tarea"]["comentario"] is None
+
+def test_pagina_completar_tarea_autenticado_existente_comentario(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	cliente.post("/tareas", json={"titulo":"Titulo", "descripcion":"Descripcion", "categoria":"Categoria"}, headers=header)
+
+	conexion.c.execute("SELECT id_tarea FROM tareas")
+
+	id_tarea=conexion.c.fetchone()["id_tarea"]
+
+	respuesta=cliente.put(f"/tareas/completar/{id_tarea}", headers=header, json={"comentario":"Comentario"})
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==200
+	assert "mensaje" in contenido
+	assert "tarea" in contenido
+	assert "comentario" in contenido["tarea"]
+	assert contenido["tarea"]["comentario"]=="Comentario"
