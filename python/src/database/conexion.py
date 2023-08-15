@@ -44,7 +44,6 @@ class Conexion:
 
 		return False if (self.c.fetchone() is None) else True
 
-
 	# Metodo para obtener los usuarios
 	def obtenerUsuarios(self)->Optional[List[Dict]]:
 
@@ -97,3 +96,13 @@ class Conexion:
 		tareas=self.c.fetchall()
 
 		return None if tareas==[] else tareas
+
+	# Metodo para obtener los datos de una tarea
+	def obtenerDatosTarea(self, id_tarea:str)->Optional[Dict]:
+
+		self.c.execute("""SELECT id_tarea, titulo, descripcion, categoria, completada, comentario, fecha_creacion, fecha_completada
+						FROM tareas
+						WHERE id_tarea=%s""",
+						(id_tarea,))
+
+		return self.c.fetchone()

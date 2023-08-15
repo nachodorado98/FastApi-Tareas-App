@@ -131,3 +131,54 @@ def test_pagina_obtener_tareas_autenticado_existentes(cliente, conexion):
 
 	assert respuesta.status_code==200
 	assert len(contenido)==3
+
+
+@pytest.mark.parametrize(["token"],
+	[("token",), ("dgfdkjg89e5yujgfkjgdf",), ("nacho98",), ("amanditaa",), ("1234",)]
+)
+def test_pagina_obtener_tarea_no_autenticado(cliente, token):
+
+	header={"Authorization": f"Bearer {token}"}
+
+	respuesta=cliente.get("/tareas/1", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==401
+	assert "detail" in contenido
+
+def test_pagina_obtener_tarea_autenticado_no_existentes(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	respuesta=cliente.get("/tareas/1", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==404
+	assert "detail" in contenido
+
+def test_pagina_obtener_tarea_autenticado_existente(cliente, conexion):
+
+	header=obtenerHeaderToken(cliente)
+
+	cliente.post("/tareas", json={"titulo":"Titulo", "descripcion":"Descripcion", "categoria":"Categoria"}, headers=header)
+
+	conexion.c.execute("SELECT id_tarea FROM tareas")
+
+	id_tarea=conexion.c.fetchone()["id_tarea"]
+
+	respuesta=cliente.get(f"/tareas/{id_tarea}", headers=header)
+
+	contenido=respuesta.json()
+
+	assert respuesta.status_code==200
+	assert "id_tarea" in contenido
+	assert "titulo" in contenido
+	assert "descripcion" in contenido
+	assert "categoria" in contenido
+	assert "completada" in contenido
+	assert "comentario" in contenido
+	assert "fecha_creacion" in contenido
+	assert "fecha_completada" in contenido
+	

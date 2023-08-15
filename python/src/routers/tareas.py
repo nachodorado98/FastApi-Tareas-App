@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Path
 from typing import Dict, List
 import datetime
 import uuid
@@ -8,7 +8,7 @@ from src.database.conexion import Conexion
 
 from src.modelos.token import Payload
 from src.modelos.tarea import TareaBBDD, Tarea
-from src.modelos.utils_tarea import obtenerObjetosTarea
+from src.modelos.utils_tarea import obtenerObjetosTarea, obtenerObjetoTarea
 
 from src.autenticacion.utils_auth import decodificarToken
 
@@ -85,3 +85,45 @@ async def obtenerTareas(payload:Payload=Depends(decodificarToken), con:Conexion=
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tareas no existentes")
 
 	return obtenerObjetosTarea(tareas)
+
+
+@router_tareas.get("/{id_tarea}", status_code=status.HTTP_200_OK, summary="Devuelve los datos de la tarea")
+async def obtenerTarea(id_tarea:str=Path(..., title="Id de la tarea", description="El id de la tarea que quieres obtener"),
+						payload:Payload=Depends(decodificarToken),
+						con:Conexion=Depends(crearConexion))->Tarea:
+
+	"""
+	Devuelve el diccionario de los datos de la tarea.
+
+	## Parametros
+
+	- **Id_tarea**: El id de la tarea (str).
+
+	200 (OK): Si se obtiene la tarea correctamente
+
+	- **Id_tarea**: El id de la tarea (str).
+	- **Titulo**: El titulo de la tarea (str).
+	- **Descripcion**: La descripcion de la tarea (str).
+	- **Categoria**: La categoria de la tarea (str).
+	- **Completada**: El estado de la tarea (bool).
+	- **Comentario**: El comentario de la tarea (str).
+	- **Fecha_creacion**: La fecha de creacion de la tarea (str).
+	- **Fecha_completada**: La fecha de la realizacion de la tarea (str).
+
+	401 (UNAUTHORIZED): Si los datos no son correctos
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+
+	404 (NOT FOUND): Si no se obtiene la tarea correctamente
+
+	- **Mensaje**: El mensaje de la excepcion (str).
+	"""
+
+	tarea=con.obtenerDatosTarea(id_tarea)
+
+	if tarea is None:
+
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no existente")
+
+	return obtenerObjetoTarea(tarea)
+	
